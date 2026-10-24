@@ -79,7 +79,7 @@ export default function App({account}:{account?:Account}){
    const id=crypto.randomUUID();lastOrder.current={key,id,at:now};
    const updated=trade(current.player,target,side,quantity,id,current.elapsed,current.status==='running',{events:current.events,reason});
    const next={...current,player:updated};stateRef.current=next;setGame(next);
-   notify(`${side==='buy'?'Bought':'Sold'} ${quantity} ${target.ticker} ${quantity===1?'share':'shares'}. ${reason==='fix-them'?'You have learned absolutely nothing.':roast(side)}`);
+   notify(`${side==='buy'?'Bought':'Sold'} ${quantity} ${target.ticker} ${quantity===1?'share':'shares'}. ${reason==='fix-them'?'You have learned absolutely nothing.':roast(side)}`,side);
    const receipt=updated.trades.at(-1)!;
    if(receipt.realizedPnL!==0)notify(`${roast(receipt.realizedPnL>0?'gain':'loss')} Realized P/L: ${money(receipt.realizedPnL)}.`,receipt.realizedPnL>0?'gain':'loss');
    sound(side==='buy'?780:520);return true;

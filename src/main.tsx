@@ -4,4 +4,5 @@ import { AuthGate } from './components/AuthGate';
 import './styles.css';
 import './feed.css';
 import './auth.css';
+import './notifications.css';
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><AuthGate/></React.StrictMode>);

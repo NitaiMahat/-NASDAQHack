@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-export interface Notice {id:number;message:string;kind:'info'|'gain'|'loss'|'achievement'}
+export interface Notice {id:number;message:string;kind:'info'|'gain'|'loss'|'achievement'|'buy'|'sell'}
 const ROASTS={
  buy:['Bro is investing in someone who doesn’t invest in them.','Financially irresponsible. Emotionally consistent.','Your group chat is going to love this.','You saw one green flag and forgot the entire relationship.','Buying the dip? The red flags are priced in.'],
  sell:['Finally, some character development.','Bro discovered self-respect.','Congratulations on choosing peace.','You moved on faster than your ex did.','Rare footage of you making a good decision.'],
