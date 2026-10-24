@@ -14,11 +14,20 @@ npm run lint
 npm run build
 ```
 
-Open the Local URL printed by Vite, normally http://localhost:5173. Production preview: `npm run preview`.
+Open the Local URL printed by Vite, normally http://localhost:5173. You'll land on the login page first: open an account (or log in), and you're sent to the trading floor. Production preview: `npm run preview` (static only, so login needs `npm run dev` or Vercel).
+
+## Login (mock)
+
+The signup page (originally a standalone prototype) now lives in the app as `login.html` (assets in `public/auth/`) and gained a login form for returning traders. The app checks `GET /api/auth/me` on load and redirects to `/login.html` without a session; the sidebar and Settings have a log-out button.
+
+- `server/auth.ts` holds the API (ported from the prototype's Node server): `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`. The Vite dev server and `api/auth/[action].ts` on Vercel both use it.
+- Accounts are stored in `data/accounts.json` (git-ignored) with salted PBKDF2-SHA256 hashes. Sessions are 7-day HMAC-signed HttpOnly, SameSite=Lax cookies, signed with `AUTH_SECRET` or a secret generated into that file. Ten failed logins per email lock that email for 15 minutes (per server instance).
+- Each account gets its own saved game (`exchange-game-v1:<account id>`). The first account to log in on a browser inherits any save made before login existed.
+- On Vercel, accounts go to `/tmp`, which is wiped between cold starts. Point `AUTH_DATA_FILE` at persistent storage or add a real database before relying on it. This is not production authentication.
 
 ## No database, by request
 
-The local player and three fictional competitors are hardcoded. The single local market supplies the same prices to your player and the bots. Bots execute actual simulated trades, with separate wallets and holdings. This is not cross-device multiplayer, a room server, or an authoritative online exchange. No database, Firebase, accounts, Meta connection, or private-account monitoring has been added.
+Your account plus three fictional competitors make up each game. The single local market supplies the same prices to your player and the bots. Bots execute actual simulated trades, with separate wallets and holdings. This is not cross-device multiplayer, a room server, or an authoritative online exchange. No database, Firebase, Meta connection, or private-account monitoring has been added; accounts are the mock JSON-file login above.
 
 Your portfolio and round are saved in this browser under `exchange-game-v1` (the stable storage key now contains schema version 2). Version 1 saves migrate without deleting cash, holdings, trade history, or legacy stocks. Existing stock prices and cost bases are preserved. New games use the five-stock roster below; migrated games may include additional legacy stocks. Reset in Settings to start the new roster from scratch. Avoid multiple tabs sharing one save.
 
@@ -110,6 +119,7 @@ The dev server includes this endpoint; Vercel runs the matching serverless handl
 - `src/services/storage.ts`: save/load and non-destructive legacy migration.
 - `src/components/`: interactive Recharts charts, orders, simulator, portfolio, delusion meter, recovery confirmation and awards.
 - `server/analyze.ts` and `api/analyze-event.ts`: optional model analysis and Vercel HTTP handler.
+- `server/auth.ts`, `api/auth/[action].ts`, `login.html`, `public/auth/`: mock accounts, sessions and the signup/login page.
 
 Market history is capped at 240 samples per stock, visible event history at 100, and processed IDs are kept for the full round. Storylines and competitors are deterministic for the same ordered inputs and ticks. A synchronous local settlement ref prevents stale-state cash updates, while identical rapid clicks within 350ms are suppressed. This is single-tab consistency, not a distributed concurrency guarantee.
 
@@ -117,7 +127,7 @@ Market history is capped at 240 samples per stock, visible event history at 100,
 
 Import as a Vite project in Vercel: build `npm run build`, output `dist`. The API is discovered automatically; `vercel.json` preserves API paths and rewrites frontend navigation to the SPA. Configure LLM secrets only if desired. Deployment has not been performed.
 
-All 73 tests passed; ESLint and the TypeScript/production build passed. The running frontend returned HTTP 200, and real local API requests returned +25% for I miss you, -35% for Blocked, and -40% for the duplicate-message plot twist, all using the deterministic fallback.
+All 79 tests passed (including the mock auth API and per-account saves); ESLint and the TypeScript/production build passed. The running frontend returned HTTP 200, and real local API requests returned +25% for I miss you, -35% for Blocked, and -40% for the duplicate-message plot twist, all using the deterministic fallback. Signup, login, wrong-password, logout and the logged-out redirect were also checked end to end in headless Chrome against the dev server.
 
 Vitest covers trading math, compounding, every primary event impact, cooldowns, replay idempotency, storylines, all scoring categories, score caps, recovery eligibility and settlement, data-driven awards, v1 migration, local persistence, the announcement, rapid clicks, notification timing/rotation, and the actual rendered Recharts SVG curve. React Testing Library covers navigation and confirmation workflows.
 
