@@ -12,11 +12,11 @@ export function createGame(name='You',seed=420):Game {
   const history=Array.from({length:45},(_,i)=>({time:(i-44)*3,price:s.basePrice}));
   return {...s,price:s.basePrice,target:s.basePrice,haltUntil:0,momentum:0,history};
  });
- return {version:2,seed:seed||420,tick:0,elapsed:0,duration:300,speed:10/3,status:'ready',stocks,player:makePlayer('local',name),bots:[makePlayer('bot-1','delulu.capital','🦄'),makePlayer('bot-2','emotionally_short','👻'),makePlayer('bot-3','greenflag_enthusiast','🌱')],events:[],processedEvents:[],scenarioIndex:0,startedAt:null,scheduledEvents:[],feedMode:'judge',nextChaosAt:10,chaosSequence:0};
+ return {version:2,seed:seed||420,tick:0,elapsed:0,duration:300,speed:5,status:'ready',stocks,player:makePlayer('local',name),bots:[makePlayer('bot-1','delulu.capital','🦄'),makePlayer('bot-2','emotionally_short','👻'),makePlayer('bot-3','greenflag_enthusiast','🌱')],events:[],processedEvents:[],scenarioIndex:0,startedAt:null,scheduledEvents:[],feedMode:'judge',nextChaosAt:10,chaosSequence:0};
 }
 export function configureFeed(game:Game,feedMode:FeedMode,seed=game.seed):Game{
  if(game.elapsed>0||game.events.length>0)throw new Error('Reset the round in Presenter controls before changing the feed mode.');
- return {...game,feedMode,seed:seed||420,speed:feedMode==='judge'?10/3:1,nextChaosAt:10,chaosSequence:0};
+ return {...game,feedMode,seed:seed||420,speed:feedMode==='judge'?5:1,nextChaosAt:10,chaosSequence:0};
 }
 export function ingest(game:Game,input:unknown,provided?:Analysis):Game {
  const e=eventInput.parse(input);

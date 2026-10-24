@@ -93,24 +93,24 @@ Every event displays the sender or activity source, message, stock, percentage m
 
 Two modes are available before a round starts:
 
-- **Judge demo:** fixed ninety-second narrative, with no presenter typing required. Fresh games default to this mode at 3.33x speed.
+- **Judge demo:** fixed sixty-second narrative, with no presenter typing required. Fresh games default to this mode at 5x speed.
 - **Chaos:** a five-minute game with seeded random stock selection, coherent storyline selection, and varied arrival times. A new Chaos round receives a browser-generated seed; saving preserves it for reproducible continuation. Low-risk GREEN gets the positive Green Flag storyline. Other stocks get mixed-signal narratives. Events within each storyline remain ordered, and all price moves still use published rules.
 
 The feed pauses and resumes with the market. Mode changes lock once time advances or an event arrives; explicitly reset the round before switching. No future-message spoilers appear in the player inbox.
 
 Manual inputs and optional staged storylines are collapsed under **Presenter controls** on the DM inbox page. The presenter panel also provides pause/resume, speed, reset, and end-round controls. These tools are local presentation controls, not authenticated host permissions. Manual submissions are labeled presenter events; automatic events remain simulated. No live Instagram connection is claimed.
 
-## Ninety-second judging demo
+## Sixty-second judging demo
 
 1. Enter a display name, choose **Enter the market**, and leave **Judge demo** selected. Open the market and buy five TOXIC shares for $502.50 including fees.
-2. About six seconds later, a simulated 3 AM story view arrives: +5%. Five shares gain $25 in value; net session P/L also accounts for the $2.50 purchase fee.
+2. About four seconds later, a simulated 3 AM story view arrives: +5%. Five shares gain $25 in value; net session P/L also accounts for the $2.50 purchase fee.
 3. Further automatic reveals mirror the pitch: still no text reply (-12%), haha (+8%), and I call everyone babe (-25%).
 4. I miss you (+25%) sparks another rally, then the duplicate-message reveal crashes the current price by 40%.
 5. The follow-up dog reveal subtracts 20% more. The compounded drawdown crosses 50%, unlocking **I CAN FIX THEM** on TOXIC.
 6. Complete the normal one-share confirmation, inspect the Delusion Meter, and open Leaderboard for the Hall of Shame.
 7. A +30% reconciliation rally and final wrong-person selloff finish the plot. The final bell stops trading and shows results.
 
-Nine controlled reveals occur at market times 20, 40, 60, 80, 110, 150, 180, 220, and 260 seconds, on the first tick at or after the threshold. The final bell is at 300 market seconds, or about ninety real seconds at the default demo speed. **Watch judge demo** on the landing page or **Run the 90s judge demo** in the sidebar starts the sequence directly. An ongoing Judge round continues from its existing position; it is not silently reset.
+Nine controlled reveals occur at market times 20, 40, 60, 80, 110, 150, 180, 220, and 260 seconds, on the first tick at or after the threshold. The final bell is at 300 market seconds, or sixty real seconds at the default demo speed. **Finish now** beside Pause ends the round immediately if you finish explaining early. **Watch judge demo** on the landing page or **Run the 60s judge demo** in the sidebar starts the sequence directly. An ongoing Judge round continues from its existing position; it is not silently reset.
 
 The -40% crash alone cannot satisfy the separate 50% recovery-button threshold. The visible -20% follow-up resolves this without falsifying price history.
 

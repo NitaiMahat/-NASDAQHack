@@ -19,7 +19,7 @@ export function loadGame(accountId?:string):Game {
    const stocks=parsed.stocks.map(s=>{const config=fresh.stocks.find(n=>n.id===s.id);return {...s,name:config?.name??s.name,ticker:config?.ticker??s.ticker,risk:config?.risk??s.risk??(s.toxicity>75?'extreme':s.toxicity>60?'high':'medium')};});
    // Add the new roster without deleting legacy stocks, money, or positions.
    if(parsed.version===1)stocks.push(...fresh.stocks.filter(s=>!stocks.some(old=>old.id===s.id)));
-   return {...parsed,version:2,stocks,player:normalizePlayer(parsed.player),bots:parsed.bots.map(normalizePlayer),events:parsed.events.map(e=>({...e,processed:true})),scheduledEvents:parsed.scheduledEvents??[],feedMode:parsed.feedMode==='chaos'?'chaos':'judge',nextChaosAt:parsed.nextChaosAt??parsed.elapsed+10,chaosSequence:parsed.chaosSequence??0};
+   return {...parsed,speed:parsed.feedMode!=='chaos'&&parsed.speed===10/3?5:parsed.speed,version:2,stocks,player:normalizePlayer(parsed.player),bots:parsed.bots.map(normalizePlayer),events:parsed.events.map(e=>({...e,processed:true})),scheduledEvents:parsed.scheduledEvents??[],feedMode:parsed.feedMode==='chaos'?'chaos':'judge',nextChaosAt:parsed.nextChaosAt??parsed.elapsed+10,chaosSequence:parsed.chaosSequence??0};
   }
  }catch{/* Invalid browser data starts a fresh demo. */}
  return createGame();
