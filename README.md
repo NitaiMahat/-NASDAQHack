@@ -87,32 +87,43 @@ Two seconds after a signed-in trader opens the dashboard, a dismissible, explici
 
 ## Automatic simulated inbox
 
-The player does not need to enter messages. Open the market, buy a stock, and fictional Instagram-style DMs and activity updates arrive automatically. A persistent inbox sits beside the chart on wide screens and stacks below it on smaller screens. The **DM inbox** page contains the full recent feed. Incoming notifications are dismissible and expire after six seconds; they never take focus or halt trading.
+The player does not need to enter messages. Open the market, buy a stock, and fictional Instagram-style DMs and activity updates arrive automatically. Messages now arrive for all five relationship stocks. A persistent inbox sits beside the chart on wide screens and stacks below it on smaller screens. The **DM inbox** page contains the full recent feed. Incoming notifications are dismissible and expire after six seconds; they never take focus or halt trading.
 
 Every event displays the sender or activity source, message, stock, percentage movement, before/after price, and the actual effect on the shares held at delivery. That exposure is captured in the event receipt, so selling later does not rewrite history. Older saves without an exposure snapshot explicitly say it was not recorded. Plot twists come from **The group chat**, rather than falsely depicting those revelations as direct messages from an ex.
 
 Two modes are available before a round starts:
 
-- **Judge demo:** fixed sixty-second narrative, with no presenter typing required. Fresh games default to this mode at 5x speed.
+- **Judge demo:** fixed thirty-second narrative, with no presenter typing required. Fresh games default to this mode at 10x speed.
 - **Chaos:** a five-minute game with seeded random stock selection, coherent storyline selection, and varied arrival times. A new Chaos round receives a browser-generated seed; saving preserves it for reproducible continuation. Low-risk GREEN gets the positive Green Flag storyline. Other stocks get mixed-signal narratives. Events within each storyline remain ordered, and all price moves still use published rules.
 
 The feed pauses and resumes with the market. Mode changes lock once time advances or an event arrives; explicitly reset the round before switching. No future-message spoilers appear in the player inbox.
 
 Manual inputs and optional staged storylines are collapsed under **Presenter controls** on the DM inbox page. The presenter panel also provides pause/resume, speed, reset, and end-round controls. These tools are local presentation controls, not authenticated host permissions. Manual submissions are labeled presenter events; automatic events remain simulated. No live Instagram connection is claimed.
 
-## Sixty-second judging demo
+## Thirty-second judging demo
 
-1. Enter a display name, choose **Enter the market**, and leave **Judge demo** selected. Open the market and buy five TOXIC shares for $502.50 including fees.
-2. About four seconds later, a simulated 3 AM story view arrives: +5%. Five shares gain $25 in value; net session P/L also accounts for the $2.50 purchase fee.
-3. Further automatic reveals mirror the pitch: still no text reply (-12%), haha (+8%), and I call everyone babe (-25%).
-4. I miss you (+25%) sparks another rally, then the duplicate-message reveal crashes the current price by 40%.
-5. The follow-up dog reveal subtracts 20% more. The compounded drawdown crosses 50%, unlocking **I CAN FIX THEM** on TOXIC.
-6. Complete the normal one-share confirmation, inspect the Delusion Meter, and open Leaderboard for the Hall of Shame.
-7. A +30% reconciliation rally and final wrong-person selloff finish the plot. The final bell stops trading and shows results.
+Reset the round, select Judge demo and TOXIC, and leave the quantity at five. Deliver your opening hook before clicking Open market. Buy immediately; the first event leaves four seconds for your initial order.
 
-Nine controlled reveals occur at market times 20, 40, 60, 80, 110, 150, 180, 220, and 260 seconds, on the first tick at or after the threshold. The final bell is at 300 market seconds, or sixty real seconds at the default demo speed. **Finish now** beside Pause ends the round immediately if you finish explaining early. **Watch judge demo** on the landing page or **Run the 60s judge demo** in the sidebar starts the sequence directly. An ongoing Judge round continues from its existing position; it is not silently reset.
+| Real time | Relationship | Incoming interaction | Impact |
+| --- | --- | --- | --- |
+| 4s | TOXIC | A 3 AM story view | +5% |
+| 6s | SITU | haha | +8% |
+| 8s | GREEN | A thoughtful presentation check-in | +5% |
+| 10s | GONE | I heard our song today | +15% |
+| 12s | FLAG | Trust me, you are the only one | +10% |
+| 14s | TOXIC | I miss you | +25% |
+| 16s | SITU | I call everyone babe | -25% |
+| 18s | TOXIC | Same message sent to three others | -40% |
+| 20s | TOXIC | They meant their dog | -20% |
+| 22s | FLAG | Blocked | -35% |
+| 24s | GREEN | Made plans and showed up | +15% |
+| 26s | GONE | Only wanted closure | -15% |
+| 28s | TOXIC | Wants to get back together | +30% |
+| 30s | All | Final bell and results | Trading ends |
 
-The -40% crash alone cannot satisfy the separate 50% recovery-button threshold. The visible -20% follow-up resolves this without falsifying price history.
+Each message changes only its named stock. Its holdings impact uses the actual shares held in that stock at delivery. The TOXIC follow-up crosses a 50% recent-peak drawdown, revealing I CAN FIX THEM from about 20s until the recovery at 28s. Pause if you need more time to explain, then resume before confirming a trade. Finish now ends the round immediately.
+
+The market still simulates 300 market seconds, accelerated at 10x into thirty real seconds. Chaos remains five real minutes at 1x and now chooses relationship-specific storylines: healthy communication for GREEN, nostalgia for GONE, exclusivity claims for FLAG, and mixed signals for SITU. Existing older judge saves migrate their speed and skip already-past reveals without resetting balances or holdings; reset for the complete new sequence.
 
 ## Optional server-side AI
 
@@ -154,7 +165,7 @@ Market history is capped at 240 samples per stock, visible event history at 100,
 
 Import as a Vite project in Vercel: build `npm run build`, output `dist`. The API is discovered automatically; `vercel.json` preserves API paths and rewrites frontend navigation to the SPA. Configure LLM secrets only if desired; optional auth configuration is documented above. The file-first routes preserve the built login page and its assets. Deployment has not been performed.
 
-All 110 tests passed; ESLint and the TypeScript/production build passed. Real local HTTP checks verified the branded login page/assets, account signup, duplicate rejection, wrong-password rejection, login, cookie-based session lookup, logout cookie clearing, and the +25% message-analysis fallback.
+All 112 tests passed; ESLint and the TypeScript/production build passed. Real local HTTP checks verified the branded login page/assets, account signup, duplicate rejection, wrong-password rejection, login, cookie-based session lookup, logout cookie clearing, and the +25% message-analysis fallback.
 
 Vitest covers trading math, compounding, every primary event impact, cooldowns, replay idempotency, storylines, all scoring categories, score caps, recovery eligibility and settlement, data-driven awards, v1 migration, local persistence, the announcement, rapid clicks, notification timing/rotation, and the actual rendered Recharts SVG curve. React Testing Library covers navigation and confirmation workflows.
 
