@@ -73,13 +73,17 @@ Controlled plot twists can move as far as -45%. Each event records its ID, sourc
 
 ## New rage-bait features
 
-- **Transaction notifications:** compact, dismissible top-right queue, four-second lifetime, one visible at a time, rotating action-specific lines. Profit/loss reactions use actual event exposure or realized sale P/L. Queue capacity is six; duplicate queued messages are suppressed.
+- **Transaction notifications:** compact, dismissible centered queue, four-second lifetime, one visible at a time, rotating action-specific lines. Profit/loss reactions use actual event exposure or realized sale P/L. Queue capacity is six; duplicate queued messages are suppressed.
 - **Delusion Meter:** a separate player statistic from stock toxicity, capped at 0-100. Buying within 45 market seconds of an I-miss-you message adds 15; buying after a block adds 25; adding to a position at least 20% below its recent peak adds 20. Profitable high-risk sales subtract 10; losing full exits subtract 15. Avoiding all trading for twelve seconds after a major negative event subtracts 5 once for that event. Conditions can combine. Each trade records its actual applied score change.
 - **Final Boss:** reaching 100 persists an achievement, shows a dramatic meter state and queued achievement toast, and plays a short tone when sound is enabled. Trading remains available. Reduced motion and muted audio are respected.
 - **I CAN FIX THEM:** available only for high/extreme-risk stocks at least 50% below their highest price in the last 120 market seconds. The dialog first offers peace or a recovery bet, then shows the normal one-share price plus fee. Confirmation rechecks eligibility, cash, market status, and circuit breakers. Completion adds 25 delusion points in addition to applicable normal rules. The button never moves prices or guarantees a recovery.
 - **Storylines:** The Comeback, The False Hope, and The Friend Zone can be scheduled from the simulator for a selected stock. They use the same ingestion engine, price accounting, cooldowns, and receipts as manual events. One storyline per stock can be queued at a time. The first reveal follows on the next tick; no future reveal is presented as a verified external event.
 - **Hall of Shame:** separate from the net-worth leaderboard. Awards use actual delusion, negative price exposure and holding duration, sales within twenty seconds before a major rally, positive realized profits, actual portfolio losses, and trade counts among active players. No qualifying evidence means no award. Bag holders rank by worst fee-inclusive holding return, then longest uninterrupted holding time. Ties use player IDs. Bots are always labeled simulated.
 - **Healing era:** net worth below $1,000 triggers a closable, one-time announcement. It does not modify cash or investments. The seen flag survives refresh and rematches for this local player until browser storage is cleared. The existing optional court bailout below $2,000 remains available; it is separate from the one-time announcement.
+
+## Login payment joke
+
+Two seconds after a signed-in trader opens the dashboard, a dismissible, explicitly simulated Zelle-style notification says their fictional ex sent $0.99 with the memo "unblock me". It expires after six seconds. It does not contact a payment provider or change the trading wallet. Guests do not receive it. Payment jokes and trading toasts stack together in the middle of the screen.
 
 ## Automatic simulated inbox
 
@@ -150,7 +154,7 @@ Market history is capped at 240 samples per stock, visible event history at 100,
 
 Import as a Vite project in Vercel: build `npm run build`, output `dist`. The API is discovered automatically; `vercel.json` preserves API paths and rewrites frontend navigation to the SPA. Configure LLM secrets only if desired; optional auth configuration is documented above. The file-first routes preserve the built login page and its assets. Deployment has not been performed.
 
-All 108 tests passed; ESLint and the TypeScript/production build passed. Real local HTTP checks verified the branded login page/assets, account signup, duplicate rejection, wrong-password rejection, login, cookie-based session lookup, logout cookie clearing, and the +25% message-analysis fallback.
+All 110 tests passed; ESLint and the TypeScript/production build passed. Real local HTTP checks verified the branded login page/assets, account signup, duplicate rejection, wrong-password rejection, login, cookie-based session lookup, logout cookie clearing, and the +25% message-analysis fallback.
 
 Vitest covers trading math, compounding, every primary event impact, cooldowns, replay idempotency, storylines, all scoring categories, score caps, recovery eligibility and settlement, data-driven awards, v1 migration, local persistence, the announcement, rapid clicks, notification timing/rotation, and the actual rendered Recharts SVG curve. React Testing Library covers navigation and confirmation workflows.
 

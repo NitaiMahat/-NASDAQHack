@@ -1,5 +1,5 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import App from '../src/App';
 import { createGame } from '../src/engine/market';
 import { saveGame, storageKey } from '../src/services/storage';
@@ -9,10 +9,12 @@ vi.mock('../src/services/auth',async importOriginal=>({...await importOriginal<t
 const alice={id:'alice',email:'alice@example.test',alias:'Alice Trader',balance:10000,createdAt:'2026-01-01'};
 const bob={...alice,id:'bob',email:'bob@example.test',alias:'Bob Trader'};
 beforeEach(()=>{localStorage.clear();vi.mocked(logout).mockReset();});
-afterEach(()=>cleanup());
+afterEach(()=>{cleanup();vi.useRealTimers();});
 describe('login integrated with the NASDAQ market',()=>{
  it('uses the signup alias and skips duplicate onboarding',()=>{render(<App account={alice}/>);expect(screen.getByText('Alice Trader')).toBeInTheDocument();expect(screen.queryByText('What should the group chat call you?')).not.toBeInTheDocument();expect(screen.getByText('Every text moves the market.')).toBeInTheDocument();});
  it('isolates settled balances and holdings by account and restores them on return',()=>{render(<App account={alice}/>);fireEvent.click(screen.getByRole('button',{name:'Start or resume market'}));fireEvent.click(screen.getByRole('button',{name:'Buy TOXIC'}));expect(JSON.parse(localStorage.getItem(storageKey('alice'))!).player.cash).toBe(949750);cleanup();render(<App account={bob}/>);expect(JSON.parse(localStorage.getItem(storageKey('bob'))!).player.cash).toBe(1000000);cleanup();render(<App account={alice}/>);expect(screen.getByText('5 shares')).toBeInTheDocument();expect(JSON.parse(localStorage.getItem(storageKey('alice'))!).player.cash).toBe(949750);});
  it('retains saved Chaos mode, seed and narrative state after login',()=>{const game=createGame('Custom Alias',99);game.feedMode='chaos';game.nextChaosAt=44;game.chaosSequence=2;saveGame(game,'alice');render(<App account={alice}/>);expect(screen.getByRole('button',{name:/Chaos RANDOM/})).toHaveAttribute('aria-pressed','true');const saved=JSON.parse(localStorage.getItem(storageKey('alice'))!);expect(saved).toMatchObject({seed:99,nextChaosAt:44,chaosSequence:2});expect(screen.getByText('Custom Alias')).toBeInTheDocument();});
  it('reports a logout failure without pretending the account was signed out',async()=>{vi.mocked(logout).mockRejectedValue(new Error('Could not sign out. Retry.'));render(<App account={alice}/>);fireEvent.click(screen.getByRole('button',{name:'Sign out'}));expect(await screen.findByText('Could not sign out. Retry.')).toBeInTheDocument();await waitFor(()=>expect(screen.getByRole('button',{name:'Sign out'})).toBeEnabled());expect(screen.getByText('Alice Trader')).toBeInTheDocument();});
+ it('shows the fictional 99-cent payment two seconds after login without changing the wallet',()=>{vi.useFakeTimers();render(<App account={alice}/>);act(()=>vi.advanceTimersByTime(1999));expect(screen.queryByLabelText('Simulated Zelle notification')).not.toBeInTheDocument();act(()=>vi.advanceTimersByTime(1));expect(screen.getByLabelText('Simulated Zelle notification')).toBeInTheDocument();expect(screen.getByText('$0.99')).toBeInTheDocument();expect(screen.getByText('“unblock me”')).toBeInTheDocument();expect(JSON.parse(localStorage.getItem(storageKey('alice'))!).player.cash).toBe(1000000);act(()=>vi.advanceTimersByTime(6000));expect(screen.queryByLabelText('Simulated Zelle notification')).not.toBeInTheDocument();});
+ it('does not show a login payment joke to a guest',()=>{vi.useFakeTimers();localStorage.setItem('exchange-entered','true');render(<App/>);act(()=>vi.advanceTimersByTime(3000));expect(screen.queryByLabelText('Simulated Zelle notification')).not.toBeInTheDocument();});
 });
