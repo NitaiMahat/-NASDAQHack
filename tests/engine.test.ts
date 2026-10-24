@@ -1,0 +1,41 @@
+import { describe,it,expect,vi,afterEach } from 'vitest';
+import { advance,clampPrice,createGame,ingest } from '../src/engine/market';
+import { portfolio,trade } from '../src/engine/trading';
+import { analysisSchema,analyzeFallback,eventInput } from '../src/engine/sentiment';
+import { analyzeOnServer } from '../server/analyze';
+import { rankings } from '../src/components/Leaderboard';
+import type { Game } from '../src/types';
+const input=(text='I miss you ❤️',id='event-1')=>({id,stockId:'toxic',type:'message',source:'simulated',text});
+const running=():Game=>({...createGame(),status:'running'});
+afterEach(()=>vi.unstubAllGlobals());
+describe('deterministic event-driven market',()=>{
+ it('positive and negative events move the correct target',()=>{const g=running();expect(ingest(g,input()).stocks[0].target).toBe(12500);expect(ingest(g,input('Wrong person, sorry.')).stocks[0].target).toBe(7500);expect(ingest(g,input()).stocks[1].target).toBe(g.stocks[1].target);});
+ it('neutral message has no target shock',()=>expect(ingest(running(),input('The sky is blue.')).stocks[0].target).toBe(10000));
+ it('deduplicates event IDs',()=>{const g=ingest(running(),input());expect(ingest(g,input())).toBe(g);expect(g.events).toHaveLength(1);});
+ it('settles exact event moves and keeps quiet ticks stable',()=>{const g=ingest(running(),input());expect(g.stocks[0].price).toBe(12500);expect(advance(g).stocks[0].price).toBe(12500);});
+ it('reproduces an entire accelerated session and finishes',()=>{let a={...running(),speed:4},b={...running(),speed:4};for(let i=0;i<38;i++){a=advance(a,8);b=advance(b,8);}expect(a).toEqual(b);expect(a.status).toBe('finished');expect(a.events).toHaveLength(7);expect(a.elapsed).toBe(300);});
+ it('keeps finite bounded prices and chronological bounded histories',()=>{let g=running();for(let i=0;i<200;i++)g=advance(g);for(const s of g.stocks){expect(Number.isFinite(s.price)).toBe(true);expect(s.price).toBeGreaterThanOrEqual(50);expect(s.price).toBeLessThanOrEqual(500000);expect(s.history.length).toBeLessThanOrEqual(240);expect(s.history.every((p,i)=>i===0||p.time>s.history[i-1].time)).toBe(true);}});
+ it('clamps price limits',()=>{expect(clampPrice(-10)).toBe(50);expect(clampPrice(1e9)).toBe(500000);});
+ it('halts major events for six market seconds',()=>{let g=ingest(running(),input('Blocked.'));expect(g.stocks[0].haltUntil).toBe(6);expect(()=>trade(g.player,g.stocks[0],'buy',1,'halt',0)).toThrow('Circuit breaker');for(let i=0;i<3;i++)g=advance(g);expect(()=>trade(g.player,g.stocks[0],'buy',1,'unhalt',g.elapsed)).not.toThrow();});
+ it('pause and final bell stop ticks and bot trades',()=>{const g={...running(),status:'paused' as const};expect(advance(g)).toBe(g);expect(advance({...g,status:'finished'}).tick).toBe(0);});
+ it('rejects unknown stocks and unsupported event types',()=>{expect(()=>ingest(running(),{...input(),stockId:'missing'})).toThrow();expect(()=>eventInput.parse({...input(),type:'spy_on_ex'})).toThrow();});
+});
+describe('integer-cent trading and settlement',()=>{
+ it('purchase deducts gross + 0.5% fee and records settlement',()=>{const g=running(),p=trade(g.player,g.stocks[0],'buy',5,'buy-1',0);expect(p.cash).toBe(949750);expect(p.holdings.toxic).toMatchObject({quantity:5,costCents:50250});expect(p.trades[0].fee).toBe(250);expect(p.trades[0].resultingQuantity).toBe(5);});
+ it('sale releases proportional basis and realizes fee-adjusted P&L',()=>{const g=running();let p=trade(g.player,g.stocks[0],'buy',5,'buy',0);p=trade(p,{...g.stocks[0],price:12000},'sell',2,'sell',10);expect(p.cash).toBe(973630);expect(p.holdings.toxic).toMatchObject({quantity:3,costCents:30150});expect(p.realized).toBe(3780);expect(portfolio(p,[{...g.stocks[0],price:12000}]).unrealized).toBe(5850);});
+ it('updates weighted average cost including fees',()=>{const g=running();let p=trade(g.player,g.stocks[0],'buy',5,'one',0);p=trade(p,{...g.stocks[0],price:20000},'buy',5,'two',10);expect(p.holdings.toxic.costCents/p.holdings.toxic.quantity).toBe(15075);});
+ it('rejects overspending, overselling, fractions, negative and invalid quantities',()=>{const g=running();expect(()=>trade(g.player,g.stocks[0],'buy',101,'too-many',0)).toThrow('Not enough');expect(()=>trade(g.player,g.stocks[0],'sell',1,'sell',0)).toThrow('more shares');for(const q of [0,-1,.5,NaN,Infinity])expect(()=>trade(g.player,g.stocks[0],'buy',q,'bad',0)).toThrow();});
+ it('rejects closed and paused markets',()=>{const g=running();expect(()=>trade(g.player,g.stocks[0],'buy',1,'closed',0,false)).toThrow('closed or paused');});
+ it('does not execute duplicate orders twice',()=>{const g=running(),p=trade(g.player,g.stocks[0],'buy',5,'same',0);expect(trade(p,g.stocks[0],'buy',5,'same',0)).toBe(p);});
+ it('serial overlapping orders cannot overspend',()=>{const g=running(),p=trade(g.player,g.stocks[0],'buy',60,'first',0);expect(()=>trade(p,g.stocks[0],'buy',60,'second',0)).toThrow('Not enough');expect(p.cash).toBeGreaterThanOrEqual(0);});
+ it('full sale removes all remaining cost basis',()=>{const g=running();let p=trade(g.player,g.stocks[0],'buy',3,'buy',0);p=trade(p,g.stocks[0],'sell',1,'s1',2);p=trade(p,g.stocks[0],'sell',2,'s2',4);expect(p.holdings.toxic).toMatchObject({quantity:0,costCents:0});expect(p.realized).toBe(-300);});
+ it('rankings use current net worth',()=>{const g=running();g.player.cash=1200000;expect(rankings(g)[0].player.id).toBe('local');});
+});
+describe('validated AI with reliable fallback',()=>{
+ it('recognizes key narrative rules in straight and smart punctuation',()=>{expect(analyzeFallback('I miss you ❤️').suggestedPercentChange).toBe(25);expect(analyzeFallback('I’m seeing someone else.').suggestedPercentChange).toBe(-30);expect(analyzeFallback('Blocked.','block').suggestedPercentChange).toBe(-35);});
+ it('accepts valid schema and clamps finite out-of-range values',()=>{const analysis=analyzeFallback('I miss you');const parsed=analysisSchema.parse({...analysis,sentimentScore:7,confidence:9,significance:-5,suggestedPercentChange:300});expect(parsed.sentimentScore).toBe(1);expect(parsed.confidence).toBe(1);expect(parsed.significance).toBe(0);expect(parsed.suggestedPercentChange).toBe(30);expect(()=>analysisSchema.parse({sentiment:'maybe'})).toThrow();});
+ it('missing credentials use deterministic fallback',async()=>expect((await analyzeOnServer(input(),{})).method).toBe('rules'));
+ it('timeouts fall back without breaking gameplay',async()=>{vi.stubGlobal('fetch',vi.fn().mockRejectedValue(new DOMException('Timeout','TimeoutError')));expect((await analyzeOnServer(input(),{LLM_API_KEY:'test',LLM_MODEL:'test-model',LLM_BASE_URL:'https://example.test/v1'})).method).toBe('rules');});
+ it('invalid model JSON falls back',async()=>{vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>({choices:[{message:{content:'{"hello":"world"}'}}]})}));expect((await analyzeOnServer(input(),{LLM_API_KEY:'test',LLM_MODEL:'configured-model',LLM_BASE_URL:'https://example.test/v1'})).method).toBe('rules');});
+ it('accepts validated server model response and uses configured model',async()=>{const mock=vi.fn().mockResolvedValue({ok:true,json:async()=>({choices:[{message:{content:JSON.stringify(analyzeFallback('I miss you'))}}]})});vi.stubGlobal('fetch',mock);const result=await analyzeOnServer(input(),{LLM_API_KEY:'test',LLM_MODEL:'configured-model',LLM_BASE_URL:'https://example.test/v1'});expect(result.method).toBe('llm');expect(JSON.parse(mock.mock.calls[0][1].body).model).toBe('configured-model');});
+});
