@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log in · NASDAQ</title>
+  <meta name="description" content="Wall Street, but everyone's emotionally bankrupt.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/auth/styles/signup.css">
+</head>
+<body>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker__track">
+      <span>EX-2019 <b class="down">▼ 41.2%</b></span>
+      <span>SITU <b class="up">▲ 3.4%</b></span>
+      <span>DLSN <b class="up">▲ 88.0%</b></span>
+      <span>GHST <b class="down">▼ 100%</b></span>
+      <span>RBND <b class="up">▲ 12.7%</b></span>
+      <span>WNTT <b class="down">▼ 9.9%</b></span>
+      <span>CLSR <b class="flat">HALTED</b></span>
+      <span>TXTBK <b class="down">▼ 2.1%</b></span>
+      <!-- duplicated so the loop is seamless -->
+      <span>EX-2019 <b class="down">▼ 41.2%</b></span>
+      <span>SITU <b class="up">▲ 3.4%</b></span>
+      <span>DLSN <b class="up">▲ 88.0%</b></span>
+      <span>GHST <b class="down">▼ 100%</b></span>
+      <span>RBND <b class="up">▲ 12.7%</b></span>
+      <span>WNTT <b class="down">▼ 9.9%</b></span>
+      <span>CLSR <b class="flat">HALTED</b></span>
+      <span>TXTBK <b class="down">▼ 2.1%</b></span>
+    </div>
+  </div>
+
+  <main class="page">
+    <header class="brand">
+      <p class="brand__mark">NASDAQ</p>
+      <p class="brand__expansion">National Association of Situationship, Delusion And Questionable Decisions</p>
+      <p class="brand__tagline">Wall Street, but everyone's emotionally bankrupt.</p>
+    </header>
+
+    <section class="card" data-step="login" aria-labelledby="login-title" hidden>
+      <h1 id="login-title" tabindex="-1">Welcome back to the floor</h1>
+      <p class="card__lede">Your positions missed you. Unlike some people.</p>
+
+      <form id="login-form" novalidate>
+        <div class="field" data-toast-avoid>
+          <label class="field__label" for="login-email">Email</label>
+          <input id="login-email" name="email" maxlength="254" type="email" autocomplete="email" inputmode="email" required
+                 aria-describedby="login-email-error">
+          <p class="field__error" id="login-email-error" hidden></p>
+        </div>
+
+        <div class="field" data-toast-avoid>
+          <label class="field__label" for="login-password">Password</label>
+          <div class="input-wrap">
+            <input id="login-password" name="password" type="password" autocomplete="current-password" maxlength="128" required
+                   aria-describedby="login-password-error">
+            <button type="button" class="reveal" data-reveal="login-password" aria-pressed="false"
+                    aria-label="Show password">Show</button>
+          </div>
+          <p class="field__error" id="login-password-error" hidden></p>
+        </div>
+
+        <p class="form-error" id="login-form-error" role="alert" hidden></p>
+
+        <button type="submit" class="submit" data-toast-avoid>Log in</button>
+      </form>
+
+      <p class="switch">New here? <button type="button" class="switch__link" data-go-step="account">Open a trading account</button></p>
+    </section>
+
+    <section class="card" data-step="account" aria-labelledby="signup-title">
+      <h1 id="signup-title">Open a trading account</h1>
+      <p class="card__lede">Invest in exes, situationships and delusions. Past performance is a red flag.</p>
+
+      <form id="signup-form" novalidate>
+        <div class="field">
+          <label class="field__label" for="email">Email</label>
+          <input id="email" name="email" maxlength="254" type="email" autocomplete="email" inputmode="email" required
+                 aria-describedby="email-error">
+          <p class="field__error" id="email-error" hidden></p>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="alias">Trader alias</label>
+          <input id="alias" name="alias" type="text" autocomplete="username" minlength="2" maxlength="24" required
+                 aria-describedby="alias-error">
+          <p class="field__error" id="alias-error" hidden></p>
+        </div>
+
+        <div class="field" data-toast-avoid>
+          <label class="field__label" for="password">Password</label>
+          <div class="input-wrap">
+            <input id="password" name="password" type="password" autocomplete="new-password" maxlength="128" required
+                   aria-describedby="password-requirements password-roast password-error">
+            <button type="button" class="reveal" data-reveal="password" aria-pressed="false"
+                    aria-label="Show password">Show</button>
+          </div>
+
+          <div class="strength" id="password-strength" hidden>
+            <div class="meter" data-score="0" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+            <p class="strength__label">Strength: <span data-strength-label></span></p>
+          </div>
+
+          <p class="roast" id="password-roast" aria-live="polite" hidden>
+            <span class="roast__headline"></span>
+            <span class="roast__line"></span>
+          </p>
+
+          <ul class="requirements" id="password-requirements" aria-label="Password requirements"></ul>
+          <p class="field__error" id="password-error" hidden></p>
+        </div>
+
+        <div class="field" data-toast-avoid>
+          <label class="field__label field__label--cursed" for="confirm">Are you sure? You were sure about your ex too.</label>
+          <div class="input-wrap">
+            <input id="confirm" name="confirm" type="password" autocomplete="new-password" maxlength="128" required
+                   aria-describedby="confirm-feedback">
+            <button type="button" class="reveal" data-reveal="confirm" aria-pressed="false"
+                    aria-label="Show password confirmation">Show</button>
+          </div>
+          <p class="confirm-feedback" id="confirm-feedback" aria-live="polite" hidden></p>
+        </div>
+
+        <p class="form-error" id="form-error" role="alert" hidden></p>
+
+        <button type="submit" class="submit" data-toast-avoid>Open account</button>
+      </form>
+
+      <p class="switch">Already trading? <button type="button" class="switch__link" data-go-step="login">Log in</button></p>
+    </section>
+
+    <section class="card card--done" data-step="done" aria-labelledby="done-title" hidden>
+      <p class="done__ticker">ORDER FILLED</p>
+      <h1 id="done-title" tabindex="-1">Account opened<span data-done-alias></span>.</h1>
+      <p class="card__lede">Starting balance: <strong>$10,000</strong> in emotional damage. Taking you to the trading floor… try not to text anyone on the way.</p>
+      <a class="submit submit--link" href="/">Enter the market now</a>
+    </section>
+
+    <div class="guest-entry"><a class="submit submit--link guest-link" href="/?demo=1">Try the guest demo ↗</a><p>No account needed. Automatic DMs and the full trading game.</p></div>
+    <p class="fineprint">
+      Mock account system: credentials are hashed into a local JSON file. Accounts may reset on hosted demos; use a demo-only password. No Instagram account is connected.
+      All exes are fictional. Any resemblance to your actual ex is your own fault.
+    </p>
+  </main>
+
+  <script src="/auth/scripts/notifications.js"></script>
+  <script src="/auth/scripts/ex-notifications.js"></script>
+  <script src="/auth/scripts/password-rules.js"></script>
+  <script src="/auth/scripts/password-roasts.js"></script>
+  <script src="/auth/scripts/auth.js"></script>
+  <script src="/auth/scripts/signup.js"></script>
+  <script src="/auth/scripts/login.js"></script>
+</body>
+</html>

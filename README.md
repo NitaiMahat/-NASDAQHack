@@ -4,7 +4,7 @@
 
 ## Run
 
-Requires Node.js 22.12+ and npm. No credentials or database needed.
+Requires Node.js 22.12+ and npm. No database or third-party credentials are needed. The guest demo does not require an account.
 
 ```bash
 npm install
@@ -14,13 +14,29 @@ npm run lint
 npm run build
 ```
 
-Open the Local URL printed by Vite, normally http://localhost:5173. Production preview: `npm run preview`.
+Open http://localhost:5180 (the login branch pins this port and fails if it is occupied). Sign up/log in, or choose **Try the guest demo**. Direct guest entry: http://localhost:5180/?demo=1. Production preview uses http://localhost:5181; without a running auth API it offers the guest fallback.
 
 ## No database, by request
 
-The local player and three fictional competitors are hardcoded. The single local market supplies the same prices to your player and the bots. Bots execute actual simulated trades, with separate wallets and holdings. This is not cross-device multiplayer, a room server, or an authoritative online exchange. No database, Firebase, accounts, Meta connection, or private-account monitoring has been added.
+The signed-in local player (or guest) trades against three fictional competitors. The single local market supplies the same prices to your player and the bots. Bots execute actual simulated trades, with separate wallets and holdings. This is not cross-device multiplayer, a room server, or an authoritative online exchange. No database, Firebase, Meta connection, or private-account monitoring has been added. Mock accounts use the local JSON-file store described below.
 
-Your portfolio and round are saved in this browser under `exchange-game-v1` (the stable storage key now contains schema version 2). Version 1 saves migrate without deleting cash, holdings, trade history, or legacy stocks. Existing stock prices and cost bases are preserved. New games use the five-stock roster below; migrated games may include additional legacy stocks. Reset in Settings to start the new roster from scratch. Avoid multiple tabs sharing one save.
+Your portfolio and round are saved in this browser under `exchange-game-v1:<account id>` for signed-in users or `exchange-game-v1` for guests (schema version 2). The first account to log in on a browser inherits a pre-login guest save, preserving holdings, money, Chaos/Judge mode, seed, and narrative state. Other accounts have separate save slots. Version 1 saves migrate without deleting cash, holdings, trade history, or legacy stocks. Existing stock prices and cost bases are preserved. New games use the five-stock roster below; migrated games may include additional legacy stocks. Reset in Settings to start the new roster from scratch. Avoid multiple tabs sharing one save.
+
+## Compatible signup and login
+
+Merged from `feature/login-integration` while keeping NASDAQ branding, the automatic inbox, both message modes, presenter controls, and the current trading engine.
+
+- `login.html` and `public/auth/` contain the signup/login interface, password feedback and bounded fictional notifications, restyled for NASDAQ.
+- `server/auth.ts` implements signup, login, logout and session lookup; the same handler serves Vite and `api/auth/[action].ts` on Vercel.
+- Account records use salted PBKDF2-SHA256 hashes in git-ignored `data/accounts.json`. HMAC-signed HttpOnly, SameSite=Lax session cookies last seven days. The generated signing secret is stored beside accounts unless `AUTH_SECRET` is set. Failed login attempts are limited per email and warm server instance.
+- `AUTH_DATA_FILE` optionally selects the mock account file. No SQL/Firestore database was introduced. Do not commit account files or use real personal passwords for this prototype.
+- A valid login opens the dashboard directly with the trader alias. Existing custom display names and saved portfolios remain intact. Logout is available in the sidebar and profile settings; failed logout requests show an error instead of pretending to clear the session.
+- `AuthGate` validates the current account before rendering it. An anonymous session goes to login. An unavailable API offers retry or an explicit guest demo rather than a redirect loop. `/?demo=1` runs the demo with no server account requirement.
+- Port 5180 is the local development default; 5181 is static preview. Both are strict. CLI `--port` can select another port for isolated testing.
+
+On Vercel, the default account file is in `/tmp`: it is ephemeral and not shared across server instances. Configuring a stable signing secret does not make that account file durable. This is a local/mock login integration, not production authentication or shared portfolio persistence. The guest demo remains usable on static hosting. Login/session UI does not make browser-controlled game balances server-authoritative.
+
+The production build emits both `dist/index.html` and `dist/login.html`. Hosting routes check actual files before the SPA fallback, preserving the login page, public assets, and API functions.
 
 ## The roster
 
@@ -132,9 +148,9 @@ Market history is capped at 240 samples per stock, visible event history at 100,
 
 ## Deploy and verification
 
-Import as a Vite project in Vercel: build `npm run build`, output `dist`. The API is discovered automatically; `vercel.json` preserves API paths and rewrites frontend navigation to the SPA. Configure LLM secrets only if desired. Deployment has not been performed.
+Import as a Vite project in Vercel: build `npm run build`, output `dist`. The API is discovered automatically; `vercel.json` preserves API paths and rewrites frontend navigation to the SPA. Configure LLM secrets only if desired; optional auth configuration is documented above. The file-first routes preserve the built login page and its assets. Deployment has not been performed.
 
-All 89 tests passed; ESLint and the TypeScript/production build passed. The running frontend returned HTTP 200, and real local API requests returned +25% for I miss you, -35% for Blocked, and -40% for the duplicate-message plot twist, all using the deterministic fallback.
+All 108 tests passed; ESLint and the TypeScript/production build passed. Real local HTTP checks verified the branded login page/assets, account signup, duplicate rejection, wrong-password rejection, login, cookie-based session lookup, logout cookie clearing, and the +25% message-analysis fallback.
 
 Vitest covers trading math, compounding, every primary event impact, cooldowns, replay idempotency, storylines, all scoring categories, score caps, recovery eligibility and settlement, data-driven awards, v1 migration, local persistence, the announcement, rapid clicks, notification timing/rotation, and the actual rendered Recharts SVG curve. React Testing Library covers navigation and confirmation workflows.
 

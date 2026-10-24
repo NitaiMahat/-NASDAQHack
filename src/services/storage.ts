@@ -1,9 +1,19 @@
 import { createGame, makePlayer } from '../engine/market';
 import type { Game, Holding, Player } from '../types';
 export const STORAGE_KEY='exchange-game-v1';
-export function loadGame():Game {
+// Each logged-in account gets its own save; without an account the shared local key is used.
+export function storageKey(accountId?:string){return accountId?`${STORAGE_KEY}:${accountId}`:STORAGE_KEY;}
+function readSave(accountId?:string){
+ const key=storageKey(accountId),own=localStorage.getItem(key);
+ if(own||!accountId)return own;
+ // The first account to log in on this browser inherits the pre-login save.
+ const legacy=localStorage.getItem(STORAGE_KEY);
+ if(legacy){localStorage.setItem(key,legacy);localStorage.removeItem(STORAGE_KEY);}
+ return legacy;
+}
+export function loadGame(accountId?:string):Game {
  try{
-  const parsed=JSON.parse(localStorage.getItem(STORAGE_KEY)??'null') as (Omit<Game,'version'>&{version:number})|null;
+  const parsed=JSON.parse(readSave(accountId)??'null') as (Omit<Game,'version'>&{version:number})|null;
   if(parsed&&(parsed.version===1||parsed.version===2)&&parsed.stocks.length>=5&&Number.isSafeInteger(parsed.player.cash)&&parsed.player.cash>=0&&Array.isArray(parsed.processedEvents)&&parsed.stocks.every(s=>Number.isSafeInteger(s.price)&&s.price>=50&&s.price<=500000)){
    const fresh=createGame(parsed.player.name);
    const stocks=parsed.stocks.map(s=>{const config=fresh.stocks.find(n=>n.id===s.id);return {...s,name:config?.name??s.name,ticker:config?.ticker??s.ticker,risk:config?.risk??s.risk??(s.toxicity>75?'extreme':s.toxicity>60?'high':'medium')};});
@@ -25,4 +35,4 @@ function normalizePlayer(player:Player):Player{
  const holdings=Object.fromEntries(Object.entries(player.holdings).map(([id,h])=>[id,{...h,openedAt:h.openedAt??replay[id]?.openedAt??0}]));
  return {...makePlayer(player.id,player.name,player.avatar),...player,trades,holdings};
 }
-export function saveGame(game:Game){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(game));return true;}catch{return false;}}
+export function saveGame(game:Game,accountId?:string){try{localStorage.setItem(storageKey(accountId),JSON.stringify(game));return true;}catch{return false;}}
