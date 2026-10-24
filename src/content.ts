@@ -8,7 +8,7 @@ export const STOCKS:Omit<Stock,'price'|'target'|'haltUntil'|'momentum'|'history'
 {id:'green',ticker:'GREEN',name:'The Healthy Relationship',description:'Communicates clearly, respects boundaries. Frankly, suspicious.',avatar:'🌱',color:'#a5d8a3',basePrice:15000,volatility:.004,toxicity:12,sentiment:.8,status:'Suspiciously healthy',risk:'low'}];
 const presetIds=['miss-you','story-like','follows-again','heart-reply','left-read','bro','unfollowed','new-partner','blocked','back-together','same-message','meant-dog'];
 export const PRESETS=presetIds.map(id=>{const rule=EVENT_RULES.find(r=>r.id===id)!;return [rule.text,rule.type] as const;});
-export const SCENARIO=[{at:30,ruleId:'story-like'},{at:50,ruleId:'everyone-story'},{at:80,ruleId:'miss-you'},{at:120,ruleId:'same-message'},{at:150,ruleId:'meant-dog'},{at:205,ruleId:'back-together'},{at:255,ruleId:'wrong-person'}];
+export const SCENARIO=[{at:20,ruleId:'story-view'},{at:40,ruleId:'still-no-reply'},{at:60,ruleId:'haha'},{at:80,ruleId:'everyone-babe'},{at:110,ruleId:'miss-you'},{at:150,ruleId:'same-message'},{at:180,ruleId:'meant-dog'},{at:220,ruleId:'back-together'},{at:260,ruleId:'wrong-person'}];
 const beginnings=['BREAKING','GROUP CHAT ALERT','FEDERAL EX WATCH','AFTER HOURS','EMOTIONAL FUTURES','MARKET DISPATCH','HOT TAKE','CLOSURE INDEX'];
 const endings=['investors demand a receipt.','the group chat is pricing it in.','common sense has left the exchange.','analysts recommend touching grass.','screenshots are now a leading indicator.'];
 export const HEADLINES=beginnings.flatMap(a=>endings.map(b=>`${a}: {ticker} moves; ${b}`));

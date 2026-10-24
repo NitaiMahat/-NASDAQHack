@@ -1,5 +1,5 @@
 import { STOCKS, SCENARIO } from '../content';
-import type { Analysis, Game, Player } from '../types';
+import type { Analysis, FeedMode, Game, Player } from '../types';
 import { eventInput, resolveAnalysis } from './sentiment';
 import { trade } from './trading';
 import { matchRule, ruleById, STORYLINES } from './eventCatalog';
@@ -12,7 +12,11 @@ export function createGame(name='You',seed=420):Game {
   const history=Array.from({length:45},(_,i)=>({time:(i-44)*3,price:s.basePrice}));
   return {...s,price:s.basePrice,target:s.basePrice,haltUntil:0,momentum:0,history};
  });
- return {version:2,seed,tick:0,elapsed:0,duration:300,speed:1,status:'ready',stocks,player:makePlayer('local',name),bots:[makePlayer('bot-1','delulu.capital','🦄'),makePlayer('bot-2','emotionally_short','👻'),makePlayer('bot-3','greenflag_enthusiast','🌱')],events:[],processedEvents:[],scenarioIndex:0,startedAt:null,scheduledEvents:[]};
+ return {version:2,seed:seed||420,tick:0,elapsed:0,duration:300,speed:10/3,status:'ready',stocks,player:makePlayer('local',name),bots:[makePlayer('bot-1','delulu.capital','🦄'),makePlayer('bot-2','emotionally_short','👻'),makePlayer('bot-3','greenflag_enthusiast','🌱')],events:[],processedEvents:[],scenarioIndex:0,startedAt:null,scheduledEvents:[],feedMode:'judge',nextChaosAt:10,chaosSequence:0};
+}
+export function configureFeed(game:Game,feedMode:FeedMode,seed=game.seed):Game{
+ if(game.elapsed>0||game.events.length>0)throw new Error('Reset the round in Presenter controls before changing the feed mode.');
+ return {...game,feedMode,seed:seed||420,speed:feedMode==='judge'?10/3:1,nextChaosAt:10,chaosSequence:0};
 }
 export function ingest(game:Game,input:unknown,provided?:Analysis):Game {
  const e=eventInput.parse(input);
@@ -24,7 +28,8 @@ export function ingest(game:Game,input:unknown,provided?:Analysis):Game {
  const lastMajor=game.events.find(ev=>ev.stockId===stock.id&&Math.abs(ev.analysis.suggestedPercentChange)>=30);
  if(major&&lastMajor&&game.elapsed-lastMajor.timestamp<12)throw new Error('Let the plot breathe. Major events on this stock need 12 market seconds between reveals.');
  const target=clampPrice(stock.price*(1+analysis.suggestedPercentChange/100));
- const event={...e,text:e.ruleId?rule!.text:e.text,ruleId:rule?.id,timestamp:game.elapsed,analysis,priceBefore:stock.price,targetAfter:target,processed:true};
+ const shares=game.player.holdings[stock.id]?.quantity??0;
+ const event={...e,text:e.ruleId?rule!.text:e.text,ruleId:rule?.id,timestamp:game.elapsed,analysis,priceBefore:stock.price,targetAfter:target,processed:true,playerImpact:{shares,deltaCents:(target-stock.price)*shares}};
  return {...game,processedEvents:[...game.processedEvents,e.id],events:[event,...game.events].slice(0,100),stocks:game.stocks.map(s=>s.id===stock.id?{...s,price:target,target,momentum:0,history:[...s.history.filter(p=>p.time!==game.elapsed),{time:game.elapsed,price:target}].slice(-240),status:rule?.status??s.status,sentiment:analysis.sentimentScore,toxicity:Math.max(0,Math.min(100,s.toxicity+(analysis.suggestedPercentChange<0?3:-1))),haltUntil:major?game.elapsed+6:s.haltUntil}:s)};
 }
 export function scheduleStoryline(game:Game,storyId:string,stockId:string,id:string):Game{
@@ -43,10 +48,24 @@ export function advance(game:Game,seconds=2):Game {
  // Quiet ticks preserve prices: every move must have an event receipt.
  const stocks=game.stocks.map(s=>({...s,history:[...s.history,{time:elapsed,price:s.price}].slice(-240)}));
  let next:Game={...game,elapsed,tick,seed,stocks,status:elapsed>=game.duration?'finished':'running'};
- while(next.scenarioIndex<SCENARIO.length&&elapsed>=SCENARIO[next.scenarioIndex].at){
+ while(next.feedMode==='judge'&&next.scenarioIndex<SCENARIO.length&&elapsed>=SCENARIO[next.scenarioIndex].at){
   const event=SCENARIO[next.scenarioIndex],rule=ruleById(event.ruleId)!;
   try{next=ingest(next,{id:`scenario-${next.scenarioIndex}`,stockId:'toxic',type:rule.type,source:'simulated',text:rule.text,ruleId:rule.id});}catch{break;}
   next={...next,scenarioIndex:next.scenarioIndex+1};
+ }
+ if(next.feedMode==='chaos'&&elapsed>=next.nextChaosAt&&next.status==='running'){
+  let rng=next.seed;
+  const pick=()=>{const value=random(rng);rng=value.seed;return value.value;};
+  const available=next.stocks.filter(s=>!next.scheduledEvents.some(e=>e.stockId===s.id));
+  if(available.length){
+   const stock=available[Math.floor(pick()*available.length)];
+   const choices=stock.risk==='low'?STORYLINES.filter(s=>s.id==='healthy'):STORYLINES.filter(s=>s.id!=='healthy');
+   const story=choices[Math.floor(pick()*choices.length)],pacing=.85+pick()*.35;
+   const entries=story.events.map((e,i)=>({id:`chaos-${next.chaosSequence}-${i}`,stockId:stock.id,ruleId:e.ruleId,storyId:story.id,at:elapsed+Math.round(e.offset*pacing)}));
+   if(entries.at(-1)!.at<=next.duration)next={...next,scheduledEvents:[...next.scheduledEvents,...entries].sort((a,b)=>a.at-b.at),chaosSequence:next.chaosSequence+1};
+  }
+  const delay=18+Math.floor(pick()*15);
+  next={...next,seed:rng,nextChaosAt:elapsed+delay};
  }
  for(const scheduled of [...next.scheduledEvents]){
   if(scheduled.at>elapsed)continue;

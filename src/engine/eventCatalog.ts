@@ -1,6 +1,10 @@
 import type { MarketEvent } from '../types';
 export interface EventRule {id:string;text:string;type:MarketEvent['type'];impact:number;headline:string;roast:string;keywords:string[];status?:string}
 export const EVENT_RULES:EventRule[]=[
+ {id:'story-view',text:'Your ex watched your story at 3 AM.',type:'like',impact:5,headline:'A 3 AM story view sends hope futures higher.',roast:'They watched twelve stories. You built a twelve-month plan.',keywords:['watched your story','viewed your story']},
+ {id:'still-no-reply',text:'Still no reply to your text, though.',type:'message',impact:-12,headline:'Story views rise. Reply liquidity remains zero.',roast:'Your message has been moved to the emotional spam folder.',keywords:['still no reply','still hasn’t replied']},
+ {id:'haha',text:'haha',type:'message',impact:8,headline:'Two a’s in “haha” trigger speculative buying.',roast:'Bro counted the letters and called it fundamental analysis.',keywords:['haha'],status:'Reading into it'},
+ {id:'everyone-babe',text:'I call everyone babe.',type:'message',impact:-25,headline:'“Babe” reclassified as a mass-market product.',roast:'You thought it was exclusivity. It was customer service.',keywords:['call everyone babe'],status:'Not exclusive'},
  {id:'comeback-like',text:'Your ex likes your comeback story.',type:'like',impact:10,headline:'The comeback gets a public endorsement.',roast:'Ten percent optimism. Ninety percent unresolved history.',keywords:['likes your comeback story']},
  {id:'comeback-hey',text:'Your ex sends “Hey”.',type:'message',impact:10,headline:'A three-letter message beats earnings expectations.',roast:'The group chat would like to see the full conversation.',keywords:['sends “hey”','sends "hey"']},
  {id:'crush-heart',text:'Your crush sends a heart emoji.',type:'message',impact:15,headline:'A heart from your crush pushes futures higher.',roast:'One emoji. Three imaginary anniversaries.',keywords:['crush sends a heart']},
@@ -37,6 +41,8 @@ export function matchRule(text:string,type='message'){
   ??(type==='block'?ruleById('blocked'):type==='unfollow'?ruleById('unfollowed'):type==='like'?ruleById('story-like'):undefined);
 }
 export const STORYLINES=[
+ {id:'three-am',name:'The 3 AM Story View',description:'They watched your story. Your actual text? Different story.',events:[{offset:0,ruleId:'story-view'},{offset:16,ruleId:'still-no-reply'},{offset:34,ruleId:'haha'},{offset:54,ruleId:'everyone-babe'}]},
+ {id:'healthy',name:'An Actual Green Flag',description:'An immediate reply. Clear plans. A real commitment. Suspicious.',events:[{offset:0,ruleId:'instant-reply'},{offset:18,ruleId:'meet-up'},{offset:40,ruleId:'back-together'}]},
  {id:'comeback',name:'The Comeback',description:'An unblock. A story like. A suspiciously specific reunion.',events:[{offset:0,ruleId:'unblocked'},{offset:15,ruleId:'comeback-like'},{offset:30,ruleId:'comeback-hey'},{offset:48,ruleId:'hoodie'}]},
  {id:'false-hope',name:'The False Hope',description:'They miss us. They want to meet. They bring a plus-one.',events:[{offset:0,ruleId:'miss-you'},{offset:18,ruleId:'meet-up'},{offset:38,ruleId:'new-boyfriend'}]},
  {id:'friend-zone',name:'The Friend Zone',description:'Fast replies, heart emojis, and a family reunion.',events:[{offset:0,ruleId:'instant-reply'},{offset:15,ruleId:'crush-heart'},{offset:35,ruleId:'brother'}]},

@@ -1,6 +1,6 @@
-# ExChange
+# NASDAQ
 
-Where heartbreak meets the stock market. A fictional relationship trading game with accurate accounting and questionable judgment.
+**National Association of Situationship, Delusion And Questionable Decisions.** A fictional relationship exchange where incoming messages move the market. Formerly branded ExChange; existing saves are preserved.
 
 ## Run
 
@@ -65,19 +65,34 @@ Controlled plot twists can move as far as -45%. Each event records its ID, sourc
 - **Hall of Shame:** separate from the net-worth leaderboard. Awards use actual delusion, negative price exposure and holding duration, sales within twenty seconds before a major rally, positive realized profits, actual portfolio losses, and trade counts among active players. No qualifying evidence means no award. Bag holders rank by worst fee-inclusive holding return, then longest uninterrupted holding time. Ties use player IDs. Bots are always labeled simulated.
 - **Healing era:** net worth below $1,000 triggers a closable, one-time announcement. It does not modify cash or investments. The seen flag survives refresh and rematches for this local player until browser storage is cleared. The existing optional court bailout below $2,000 remains available; it is separate from the one-time announcement.
 
+## Automatic simulated inbox
+
+The player does not need to enter messages. Open the market, buy a stock, and fictional Instagram-style DMs and activity updates arrive automatically. A persistent inbox sits beside the chart on wide screens and stacks below it on smaller screens. The **DM inbox** page contains the full recent feed. Incoming notifications are dismissible and expire after six seconds; they never take focus or halt trading.
+
+Every event displays the sender or activity source, message, stock, percentage movement, before/after price, and the actual effect on the shares held at delivery. That exposure is captured in the event receipt, so selling later does not rewrite history. Older saves without an exposure snapshot explicitly say it was not recorded. Plot twists come from **The group chat**, rather than falsely depicting those revelations as direct messages from an ex.
+
+Two modes are available before a round starts:
+
+- **Judge demo:** fixed ninety-second narrative, with no presenter typing required. Fresh games default to this mode at 3.33x speed.
+- **Chaos:** a five-minute game with seeded random stock selection, coherent storyline selection, and varied arrival times. A new Chaos round receives a browser-generated seed; saving preserves it for reproducible continuation. Low-risk GREEN gets the positive Green Flag storyline. Other stocks get mixed-signal narratives. Events within each storyline remain ordered, and all price moves still use published rules.
+
+The feed pauses and resumes with the market. Mode changes lock once time advances or an event arrives; explicitly reset the round before switching. No future-message spoilers appear in the player inbox.
+
+Manual inputs and optional staged storylines are collapsed under **Presenter controls** on the DM inbox page. The presenter panel also provides pause/resume, speed, reset, and end-round controls. These tools are local presentation controls, not authenticated host permissions. Manual submissions are labeled presenter events; automatic events remain simulated. No live Instagram connection is claimed.
+
 ## Ninety-second judging demo
 
-Choose **Watch the chaos** from the intro or **Run the 90s rage demo** in the sidebar. A fresh five-market-minute round runs at 3.33x, with two-second real-time ticks. An ongoing round is accelerated from its current position; Settings offers an explicit reset for a full replay.
+1. Enter a display name, choose **Enter the market**, and leave **Judge demo** selected. Open the market and buy five TOXIC shares for $502.50 including fees.
+2. About six seconds later, a simulated 3 AM story view arrives: +5%. Five shares gain $25 in value; net session P/L also accounts for the $2.50 purchase fee.
+3. Further automatic reveals mirror the pitch: still no text reply (-12%), haha (+8%), and I call everyone babe (-25%).
+4. I miss you (+25%) sparks another rally, then the duplicate-message reveal crashes the current price by 40%.
+5. The follow-up dog reveal subtracts 20% more. The compounded drawdown crosses 50%, unlocking **I CAN FIX THEM** on TOXIC.
+6. Complete the normal one-share confirmation, inspect the Delusion Meter, and open Leaderboard for the Hall of Shame.
+7. A +30% reconciliation rally and final wrong-person selloff finish the plot. The final bell stops trading and shows results.
 
-1. Buy TOXIC shares at $100. Five shares cost $502.50 including the fee.
-2. A story like adds 5%; the next reveal takes away 15%.
-3. I miss you adds 25% to the then-current price. Your holdings gain exactly the price difference times shares held.
-4. The same message went to three other people: -40%.
-5. A follow-up reveal, They meant their dog, subtracts another 20%: the compounded drawdown is 52%, unlocking I CAN FIX THEM.
-6. Confirm a one-share purchase, inspect your Delusion Meter, and open Leaderboard for the Hall of Shame.
-7. A genuine +30% reconciliation rally and final wrong-person selloff close the plot. The final bell stops trading and calculates results. Copy a text results card or rematch.
+Nine controlled reveals occur at market times 20, 40, 60, 80, 110, 150, 180, 220, and 260 seconds, on the first tick at or after the threshold. The final bell is at 300 market seconds, or about ninety real seconds at the default demo speed. **Watch judge demo** on the landing page or **Run the 90s judge demo** in the sidebar starts the sequence directly. An ongoing Judge round continues from its existing position; it is not silently reset.
 
-The supplied brief's -40% crash alone cannot satisfy its separate 50% drawdown condition. The extra, visibly reported -20% reveal resolves that inconsistency without falsifying the meter or price history.
+The -40% crash alone cannot satisfy the separate 50% recovery-button threshold. The visible -20% follow-up resolves this without falsifying price history.
 
 ## Optional server-side AI
 
@@ -97,13 +112,15 @@ Restart Vite. `POST /api/analyze-event` takes:
 
 The response includes a Zod-validated analysis and `method: llm | rules`. An optional `ruleId` must name a published rule. AI cannot choose prices: known events keep their published impact; unknown positive/negative/neutral-or-ambiguous classifications map to +5%/-8%/0%. Model prose is used only after validation. Missing credentials, invalid output, and timeouts fall back to deterministic rules. Server timeout is 3.5 seconds and browser API timeout is 5.5 seconds.
 
-The dev server includes this endpoint; Vercel runs the matching serverless handler. Static production preview has no API and uses the same browser fallback. No API key is bundled into the frontend. The serverless endpoint has a best-effort, per-warm-instance request cap of twenty per IP per minute; it is not a distributed authenticated quota. This endpoint analyzes fictional text only; local trades and events still settle in the browser. Raw messages are not logged by app code. Only enter fictional messages; recent text remains in the browser until reset.
+The dev server includes this endpoint; Vercel runs the matching serverless handler. Automatic feed events use the deterministic published-rule classifier locally; optional model requests occur only for presenter-submitted messages. Static production preview has no API and uses the same browser fallback. No API key is bundled into the frontend. The serverless endpoint has a best-effort, per-warm-instance request cap of twenty per IP per minute; it is not a distributed authenticated quota. This endpoint analyzes fictional text only; local trades and events still settle in the browser. Raw messages are not logged by app code. Only enter fictional messages; recent text remains in the browser until reset.
 
 ## Architecture
 
 - `src/engine/market.ts`: canonical local state, event settlement, session ticks, scheduled stories, simulated competitors.
 - `src/engine/trading.ts`: immutable integer-cent settlement, idempotency, share/cash validation and portfolio valuation.
-- `src/engine/eventCatalog.ts`: published event impacts, storylines and matching.
+- `src/engine/eventCatalog.ts`: published event impacts, pitch-specific stories and matching.
+- `src/components/IncomingFeed.tsx`, `IncomingAlert.tsx`, and `FeedControls.tsx`: automatic inbox, incoming notifications and mode selection.
+- `src/services/messagePresentation.ts`: separates direct messages, activity updates and group-chat plot twists.
 - `src/engine/delusion.ts`: score rules, achievement levels, recent-peak drawdowns and restraint rewards.
 - `src/engine/awards.ts`: evidence-based Hall of Shame calculations.
 - `src/hooks/useNotifications.ts`: bounded queue and nonrepeating contextual roast rotation.
@@ -117,7 +134,7 @@ Market history is capped at 240 samples per stock, visible event history at 100,
 
 Import as a Vite project in Vercel: build `npm run build`, output `dist`. The API is discovered automatically; `vercel.json` preserves API paths and rewrites frontend navigation to the SPA. Configure LLM secrets only if desired. Deployment has not been performed.
 
-All 73 tests passed; ESLint and the TypeScript/production build passed. The running frontend returned HTTP 200, and real local API requests returned +25% for I miss you, -35% for Blocked, and -40% for the duplicate-message plot twist, all using the deterministic fallback.
+All 89 tests passed; ESLint and the TypeScript/production build passed. The running frontend returned HTTP 200, and real local API requests returned +25% for I miss you, -35% for Blocked, and -40% for the duplicate-message plot twist, all using the deterministic fallback.
 
 Vitest covers trading math, compounding, every primary event impact, cooldowns, replay idempotency, storylines, all scoring categories, score caps, recovery eligibility and settlement, data-driven awards, v1 migration, local persistence, the announcement, rapid clicks, notification timing/rotation, and the actual rendered Recharts SVG curve. React Testing Library covers navigation and confirmation workflows.
 
