@@ -14,7 +14,7 @@ npm run lint
 npm run build
 ```
 
-Open the Local URL printed by Vite, normally http://localhost:5173. You'll land on the login page first: open an account (or log in), and you're sent to the trading floor. Production preview: `npm run preview` (static only, so login needs `npm run dev` or Vercel).
+Open the Local URL printed by Vite, http://localhost:5180 (preview uses 5181; both fail instead of switching ports if they're busy). You'll land on the login page first: open an account (or log in), and you're sent to the trading floor. Production preview: `npm run preview` (static only, so login needs `npm run dev` or Vercel).
 
 ## Login (mock)
 

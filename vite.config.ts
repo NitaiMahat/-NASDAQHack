@@ -40,6 +40,9 @@ export default defineConfig(({mode})=>({
    });
   }
  }],
+ // 5173 is often taken by other local Vite apps; fail loudly instead of drifting to a random port.
+ server:{port:5180,strictPort:true},
+ preview:{port:5181,strictPort:true},
  test:{environment:'jsdom',setupFiles:['./tests/setup.ts'],restoreMocks:true},
  build:{rollupOptions:{input:{main:'index.html',login:'login.html'},output:{manualChunks:{charts:['recharts'],motion:['framer-motion']}}}}
 }));
